@@ -54,11 +54,11 @@ body{
   justify-content:center;
 }
 .dayAndNight{
-  margin-right: 10px;
+  margin-right: 5px;
   margin-top: 10px;
   display: flex;
   height:auto;
-  width: 70px;
+  width: 90px;
   flex-wrap: wrap;
   font-size: medium;
   float: left;
