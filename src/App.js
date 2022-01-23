@@ -63,7 +63,7 @@ class App extends React.Component {
           appid: "23035354",
           appsecret: "8YvlPNrz",
           version: "v9",
-          city: "广州",
+          city: "",
         },
       })
       .then((response) => {
