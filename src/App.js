@@ -55,6 +55,21 @@ class App extends React.Component {
   updateData = (city) => {
     console.log(city);
     this.setState({ city });
+    axios
+      .get("https://v0.yiketianqi.com/api", {
+        params: {
+          appid: "23035354",
+          appsecret: "8YvlPNrz",
+          version: "v9",
+          city: city,
+        },
+      })
+      .then((response) => {
+        this.setState(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
   componentWillMount() {
     axios
@@ -63,13 +78,11 @@ class App extends React.Component {
           appid: "23035354",
           appsecret: "8YvlPNrz",
           version: "v9",
-          city: "",
+          city: this.state.city,
         },
       })
       .then((response) => {
-        console.log(response.data);
         this.setState(response.data);
-        console.log(this.state);
       })
       .catch(function (error) {
         console.log(error);
@@ -78,9 +91,9 @@ class App extends React.Component {
   render() {
     return (
       <Layout>
-        <HeaderWN {...this.state} />
-        <ContentWN {...this.state} updateData={this.props.updateData} />
-        <Footer>&copy;2022 Maxtune</Footer>
+        <HeaderWN {...this.state} updateData={this.updateData} />
+        <ContentWN {...this.state} />
+        <Footer>&copy;2022 Maxtune version 1.2</Footer>
       </Layout>
     );
   }
@@ -105,7 +118,6 @@ function IconsView(weaImg){
     case 'qing':
       return <SunnyIcon />
     default:
-      console.log('weaImg is:',weaImg)
       return <SunnyIcon />
   }
 }
@@ -119,7 +131,7 @@ class HeaderWN extends React.Component {
         <Row justify="space-between" align="middle">
           <span className="title">Weather Now</span>
           <div>
-            <CitySwitcher localcity={city} />
+            <CitySwitcher localcity={city} updateData={this.props.updateData}/>
           </div>
         </Row>
       </Header>
@@ -128,20 +140,33 @@ class HeaderWN extends React.Component {
 }
 
 class ContentWN extends React.Component {
+  state = {
+    data: this.props
+  }
+  componentDidMount() {
+    setTimeout(()=>{
+      this.setState({data:this.props})
+    },1000)
+  }
+  componentWillReceiveProps(){
+    setTimeout(()=>{
+      this.setState({data:this.props})
+    },1000)
+  }
   render() {
-    let { city, data, aqi } = this.props;
-    console.log("contentWN city is:", city);
+    let { city, data, aqi } = this.state.data;
+    console.log("contentWN is:", this.state);
     return (
       <Content className="content">
         <div
           className="Box"
           style={{ marginLeft: "auto", marginRight: "auto" }}
         >
-          <MainCard {...this.props} />
-          <HourData {...this.props} />
-          <SevenDayData {...this.props} />
-          <AqiData {... this.props} />
-          <Life {...this.props}/>
+          <MainCard {...this.state.data} />
+          <HourData {...this.state.data} />
+          <SevenDayData {...this.state.data} />
+          <AqiData {... this.state.data} />
+          <Life {...this.state.data}/>
         </div>
       </Content>
     );
@@ -157,8 +182,10 @@ class CitySwitcher extends React.Component {
     this.setState({
       text: selectedOptions.map((o) => o.label).join(", "),
     });
-    city = selectedOptions[selectedOptions.length - 2].code;
-    console.log(selectedOptions[selectedOptions.length - 2].code);
+    city = selectedOptions[selectedOptions.length - 2].value;
+    city = city.substring(0,city.length-1)
+    // console.log(city.substring(0,city.length-1));
+    this.props.updateData(city)
   };
   componentWillMount() {
     setTimeout(() => {
@@ -215,6 +242,22 @@ class MainCard extends React.Component {
     setTimeout(() => {
       let localData = this.props;
       if (localData!=undefined) this.setState({loading:false})
+      else document.location.reload();
+      console.log("maincard datatem is:", localData.data[0].tem);
+      this.setState({
+        greet: this.greet(localData.data[0].wea_day,localData.data[0].air),
+        tem: localData.data[0].tem,
+        temDay: localData.data[0].tem1,
+        temNight: localData.data[0].tem2,
+        weatherDayImg: localData.data[0].wea_img,
+      });
+    }, 2000);
+  }
+  componentWillReceiveProps(){
+    this.setState({loading:true})
+    setTimeout(() => {
+      let localData = this.props;
+      if (localData!==undefined) this.setState({loading:false})
       else document.location.reload();
       console.log("maincard datatem is:", localData.data[0].tem);
       this.setState({
@@ -290,7 +333,54 @@ class HourData extends React.Component {
   componentDidMount() {
     setTimeout(() => {
       let localData = this.props;
-      if (localData!=undefined) {this.setState({loading:false});console.log(this.state.loading)}
+      if (localData!=undefined) {this.setState({loading:false})}
+      else document.location.reload();
+      console.log("HourData datatem is:", localData.data[0].tem);
+      this.setState({
+        hour0:localData.data[0].hours[0].hours,
+        weaimg0:localData.data[0].hours[0].wea_img,
+        tem0:localData.data[0].hours[0].tem,
+        hour1:localData.data[0].hours[1].hours,
+        weaimg1:localData.data[0].hours[1].wea_img,
+        tem1:localData.data[0].hours[1].tem,
+        hour2:localData.data[0].hours[2].hours,
+        weaimg2:localData.data[0].hours[2].wea_img,
+        tem2:localData.data[0].hours[2].tem,
+        hour3:localData.data[0].hours[3].hours,
+        weaimg3:localData.data[0].hours[3].wea_img,
+        tem3:localData.data[0].hours[3].tem,
+        hour4:localData.data[0].hours[4].hours,
+        weaimg4:localData.data[0].hours[4].wea_img,
+        tem4:localData.data[0].hours[4].tem,
+        hour5:localData.data[0].hours[5].hours,
+        weaimg5:localData.data[0].hours[5].wea_img,
+        tem5:localData.data[0].hours[5].tem,
+        hour6:localData.data[0].hours[6].hours,
+        weaimg6:localData.data[0].hours[6].wea_img,
+        tem6:localData.data[0].hours[6].tem,
+        hour7:localData.data[0].hours[7].hours,
+        weaimg7:localData.data[0].hours[7].wea_img,
+        tem7:localData.data[0].hours[7].tem,
+        hour8:localData.data[0].hours[8].hours,
+        weaimg8:localData.data[0].hours[8].wea_img,
+        tem8:localData.data[0].hours[8].tem,
+        hour9:localData.data[0].hours[9].hours,
+        weaimg9:localData.data[0].hours[9].wea_img,
+        tem9:localData.data[0].hours[9].tem,
+        hour10:localData.data[0].hours[10].hours,
+        weaimg10:localData.data[0].hours[10].wea_img,
+        tem10:localData.data[0].hours[10].tem,
+        hour11:localData.data[0].hours[11].hours,
+        weaimg11:localData.data[0].hours[11].wea_img,
+        tem11:localData.data[0].hours[11].tem,
+      });
+    }, 2000);
+  }
+  componentWillReceiveProps(){
+    this.setState({loading:true})
+    setTimeout(() => {
+      let localData = this.props;
+      if (localData!=undefined) {this.setState({loading:false})}
       else document.location.reload();
       console.log("HourData datatem is:", localData.data[0].tem);
       this.setState({
@@ -503,6 +593,45 @@ class SevenDayData extends React.Component {
     loading:true,
   }
   componentDidMount() {
+    setTimeout(() => {
+      let localData = this.props;
+      if (localData!=undefined) this.setState({loading:false})
+      else document.location.reload();
+      console.log("sevenDayData datatem is:", localData.data[0].tem);
+      this.setState({
+        day1:localData.data[0].week.charAt(localData.data[0].week.length-1),
+        day2:localData.data[1].week.charAt(localData.data[1].week.length-1),
+        day3:localData.data[2].week.charAt(localData.data[2].week.length-1),
+        day4:localData.data[3].week.charAt(localData.data[3].week.length-1),
+        day5:localData.data[4].week.charAt(localData.data[4].week.length-1),
+        day6:localData.data[5].week.charAt(localData.data[5].week.length-1),
+        day7:localData.data[6].week.charAt(localData.data[6].week.length-1),
+        weaImg1:localData.data[0].wea_img,
+        weaImg2:localData.data[1].wea_img,
+        weaImg3:localData.data[2].wea_img,
+        weaImg4:localData.data[3].wea_img,
+        weaImg5:localData.data[4].wea_img,
+        weaImg6:localData.data[5].wea_img,
+        weaImg7:localData.data[6].wea_img,
+        temDay1:localData.data[0].tem1,
+        temDay2:localData.data[1].tem1,
+        temDay3:localData.data[2].tem1,
+        temDay4:localData.data[3].tem1,
+        temDay5:localData.data[4].tem1,
+        temDay6:localData.data[5].tem1,
+        temDay7:localData.data[6].tem1,
+        temNight1:localData.data[0].tem2,
+        temNight2:localData.data[1].tem2,
+        temNight3:localData.data[2].tem2,
+        temNight4:localData.data[3].tem2,
+        temNight5:localData.data[4].tem2,
+        temNight6:localData.data[5].tem2,
+        temNight7:localData.data[6].tem2,
+      });
+    }, 2000);
+  }
+  componentWillReceiveProps(){
+    this.setState({loading:true})
     setTimeout(() => {
       let localData = this.props;
       if (localData!=undefined) this.setState({loading:false})
@@ -813,6 +942,20 @@ class AqiData extends React.Component {
       });
     }, 2000);
   }
+  componentWillReceiveProps(){
+    this.setState({loading:true})
+    setTimeout(() => {
+      let localData = this.props;
+      if (localData!=undefined) this.setState({loading:false})
+      else document.location.reload();
+      console.log("maincard datatem is:", localData.data[0].tem);
+      this.setState({
+        aqi:localData.data[0].air_level,
+        aqiNum:localData.data[0].air,
+        aqiSuggest:localData.data[0].air_tips
+      });
+    }, 2000);
+  }
   render(){
     return(
       <div className="aqi">
@@ -831,7 +974,7 @@ class AqiData extends React.Component {
                 "50%": "#ffee03",
                 "100%": "#8a0000",
               }}
-              percent={(this.state.aqiNum/500)*100}
+              percent={((this.state.aqiNum/500)*100).toFixed(1)}
               status="active"
             />
             </Skeleton>
@@ -852,6 +995,24 @@ class Life extends React.Component {
     loading:true,
   }
   componentDidMount() {
+    setTimeout(() => {
+      let localData = this.props;
+      if (localData!=undefined) this.setState({loading:false})
+      else document.location.reload();
+      console.log("life datatem is:", localData.data[0].humidity.substring(0,2));
+      this.setState({
+        shidu:localData.data[0].humidity.substring(0, localData.data[0].humidity.length - 1),
+        fengsu:localData.data[0].win_meter.substring(0, localData.data[0].win_meter.length - 4),
+        fengsuLevel:localData.data[0].win_speed,
+        ziwaixianLevel:localData.data[0].index[0].level,
+        ziwaixianSuggest:localData.data[0].index[0].desc,
+        chuanyiLevel:localData.data[0].index[3].level,
+        chuanyiSuggest:localData.data[0].index[3].desc,
+      });
+    }, 2000);
+  }
+  componentWillReceiveProps(){
+    this.setState({loading:true})
     setTimeout(() => {
       let localData = this.props;
       if (localData!=undefined) this.setState({loading:false})
